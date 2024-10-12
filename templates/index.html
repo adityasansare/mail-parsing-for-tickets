@@ -1,0 +1,76 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Verification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Email Verification</h1>
+        
+        <div class="email-display">
+            <h2>Instructions:</h2>
+            <p>Please forward the email from <strong>{{ expected_from_email }}</strong> to our email address <strong>{{ your_email }}</strong>.</p>
+            <p>After forwarding, enter your email below and click "Submit" to verify.</p>
+            <!-- Optionally, display a sample email or further instructions here -->
+        </div>
+        
+        <form method="POST" action="/">
+            <label for="user_email">Enter Your Email:</label>
+            <input type="email" id="user_email" name="user_email" required value="{{ user_email }}">
+            <button type="submit" name="submit">Submit</button>
+        </form>
+        
+        {% if user_email %}
+            <form method="POST" action="/confirm">
+                <input type="hidden" name="user_email" value="{{ user_email }}">
+                <button type="submit">I have forwarded the email</button>
+            </form>
+        {% endif %}
+        
+        {% if verification_result %}
+            <div class="result {% if 'successful' in verification_result %}success{% else %}failure{% endif %}">
+                <h2>Verification Result:</h2>
+                <p>{{ verification_result | safe }}</p>
+                
+                {% if 'successful' in verification_result and validated_data %}
+                    <h3>Validated Details:</h3>
+                    <table>
+                        <tr>
+                            <th>From Email</th>
+                            <td>{{ validated_data.from_email }}</td>
+                        </tr>
+                        <tr>
+                            <th>To Email</th>
+                            <td>{{ validated_data.to_email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Booking ID</th>
+                            <td>{{ validated_data.booking_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Venue</th>
+                            <td>{{ validated_data.venue }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date & Time</th>
+                            <td>{{ validated_data.date_time }}</td>
+                        </tr>
+                        <tr>
+                            <th>Event Name</th>
+                            <td>{{ validated_data.event_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Quantity</th>
+                            <td>{{ validated_data.quantity }}</td>
+                        </tr>
+                    </table>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
