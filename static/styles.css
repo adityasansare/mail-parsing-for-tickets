@@ -28,17 +28,32 @@ form {
     text-align: center;
 }
 
+.form-group {
+    margin-bottom: 20px;
+}
+
 label {
     display: block;
     margin-bottom: 10px;
     font-weight: bold;
 }
 
-input[type="email"] {
+input[type="email"], select {
     width: 80%;
     padding: 10px;
-    margin-bottom: 20px;
     border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+select {
+    background-color: white;
+    cursor: pointer;
+}
+
+.platform-info {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #e9ecef;
     border-radius: 4px;
 }
 
