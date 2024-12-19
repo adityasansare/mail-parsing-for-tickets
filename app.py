@@ -272,6 +272,55 @@ def parse_paytminsider_email(msg):
         "quantity": quantity
     }
 
+def parse_dice_email(msg):
+    """Parse DICE email format."""
+    body = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/plain":
+                body = part.get_payload(decode=True).decode(errors="ignore")
+                break
+    else:
+        body = msg.get_payload(decode=True).decode(errors="ignore")
+
+    forwarded_email = extract_forwarded_email(body)
+    if not forwarded_email:
+        return None
+
+    # Clean soft line breaks that may appear in the email
+    forwarded_email = forwarded_email.replace("=\n", "")
+
+    # Extract required fields
+    from_email = extract_email_field(forwarded_email, "From:")
+    to_email = extract_email_field(forwarded_email, "To:")
+
+    # Extract DICE specific fields
+    # Event name - appears after "you are going" and before the venue details
+    event_match = re.search(r"you are going\s*(.*?)(?:View tickets|Venue details|<https?://)", forwarded_email, re.IGNORECASE | re.DOTALL)
+    
+    # Venue - appears between "Venue" and the address
+    venue_match = re.search(r"Venue\s*[:\s]*(.*?)(?=\s*<|$)", forwarded_email, re.IGNORECASE)
+
+    
+    # Date and time - format is specific in DICE emails
+    datetime_match = re.search(r"Date & time\s*(.*?)(?:\n|Doors)", forwarded_email, re.IGNORECASE)
+    
+    # Quantity - extract from the ticket details section
+    quantity_match = re.search(r"Tickets\s*(\d+).*?Group\s+of\s*(\d+)", forwarded_email, re.IGNORECASE)
+    
+    # Booking/Order ID - In DICE emails, we might need to use a different identifier
+    # Using the URL dice_id parameter as a unique identifier
+    booking_id_match = re.search(r"dice_id=([A-Za-z0-9]+)", forwarded_email, re.IGNORECASE)
+
+    return {
+        "from_email": from_email,
+        "to_email": to_email,
+        "booking_id": booking_id_match.group(1) if booking_id_match else None,
+        "venue": venue_match.group(1).strip() if venue_match else None,
+        "date_time": datetime_match.group(1).strip() if datetime_match else None,
+        "event_name": event_match.group(1).strip() if event_match else None,
+        "quantity": quantity_match.group(1) if quantity_match else None
+    }
 
 def parse_email(msg, platform):
     """
@@ -284,9 +333,12 @@ def parse_email(msg, platform):
         return parse_zomato_email(msg)
     elif platform == 'paytminsider':
         return parse_paytminsider_email(msg)
+    elif platform == 'dice':
+        return parse_dice_email(msg)
     else:
         logging.error(f"Unsupported platform: {platform}")
         return None
+    
 
 @app.route("/", methods=["GET", "POST"])
 def index():

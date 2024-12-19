@@ -1,5 +1,3 @@
-# config.py
-
 import os
 from dotenv import load_dotenv
 
@@ -14,7 +12,8 @@ IMAP_SERVER = os.getenv("IMAP_SERVER")
 PLATFORM_EMAILS = {
     'bookmyshow': 'tickets@bookmyshow.email',
     'zomato': 'eventsupport@zomato.com',
-    'paytminsider': 'purchases@insider.in'
+    'paytminsider': 'purchases@insider.in',
+    'dice': 'noreply@dice.fm'
 }
 
 def get_platform_email(platform):
